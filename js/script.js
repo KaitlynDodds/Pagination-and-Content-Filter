@@ -2,15 +2,21 @@
 const MAX_STUDENTS_SHOWN = 10;
 
 const studentList = $('.student-list');
-const studentListLIs = $('.student-list li');
+const allStudentListLIs = $('.student-list li');
+let activeStudentList = $('.student-list li');
 
 
 // HELPER FUNCTIONS ////////////////////////////////////////////////////
 
 // returns array of students between start, end indices 
 const getStudents = (start, end) => {
-	return studentListLIs.slice(start, end);
+	return activeStudentList.slice(start, end);
 }
+
+const calcPaginationLinks = (studentList) => {
+	return Math.ceil(studentList.length / MAX_STUDENTS_SHOWN);	
+}
+
 
 // filter student lis when pagination link is clicked 
 const handlePaginationLink = (e) => {
@@ -21,15 +27,14 @@ const handlePaginationLink = (e) => {
 		// add active class to selected link
 		$(e.target).addClass('active');
 
-		// hide all students
-		hideAll();
-
 		// get link num 
 		const linkNum = $(e.target).text();
 
 		// calculate which student segment should be shown 
 		const start = MAX_STUDENTS_SHOWN * (linkNum - 1);
 		const end = start + MAX_STUDENTS_SHOWN;
+
+		// get students to be shown
 		const students = getStudents(start, end);
 
 		// display appropriate students 
@@ -38,22 +43,73 @@ const handlePaginationLink = (e) => {
 	}
 }
 
+const handleStudentSearch = (e) => {
+
+	// get input 
+	const searchInput = $('.student-search input').val().trim().toLowerCase();
+
+	// filter student lis for matching data 
+	const filteredStudents = allStudentListLIs.filter(function(index, element) {
+		
+		const name = $(".student-details h3", element).text();
+		const email = $(".email", element).text();
+
+		// check for matching email, name 
+		return name.indexOf(searchInput) > -1 || email.indexOf(searchInput) > -1;
+	});
+
+	// alter pagination links
+	const numLinks = calcPaginationLinks(filteredStudents);
+	
+	// update pagination links
+	addPaginationLinks(numLinks);
+
+	// remove any previously displayed msgs
+	$('.student-list p').remove()
+		
+	if (filteredStudents.length > 0) {
+		// update student list to pull from 
+		activeStudentList = filteredStudents;
+
+		// show first 10 students 
+		triggerPagination();
+
+	} else {
+		// display 'no data found' message 
+		displayNoDataMsg(searchInput);
+	}
+
+}
+
+const triggerPagination = () => {
+	if ($('.pagination a')[0]) {
+		$('.pagination a')[0].click();
+	} else {
+		show(activeStudentList);
+	}
+}
+
 // UI FUNCTIONS ///////////////////////////////////////////////////////
 
 // hides all student lis
 const hideAll = () => {
 	// hide all students
-	$(studentListLIs).hide();
-}
-
-const showAll = () => {
-	// hide all students
-	$(studentListLIs).show();
+	$(allStudentListLIs).hide();
 }
 
 // shows designated student lis
-const show = (studentLIs) => {
-	$(studentLIs).show();
+const show = (students) => {
+	hideAll();
+
+	$(students).show();
+}
+
+// show msg indicating no search results
+const displayNoDataMsg = (searchInput) => {
+	// hide all students
+	hideAll();
+	// show no results msg
+	$('.student-list').prepend(`<p>'${searchInput}' did not return any matching results...</p>`);
 }
 
 // add pagination div after student-list ul
@@ -66,16 +122,19 @@ const addPaginationDiv = () => {
 	// add event handler to pagination 
 	$('.pagination').on('click', handlePaginationLink);
 
+	// calc how many links are needed 
+	const numLinks = calcPaginationLinks(activeStudentList);
+
 	// supply links for pagination div
-	addPaginationLinks();
+	addPaginationLinks(numLinks);
 
 }
 
 // add appropriate num of pagination links 
-const addPaginationLinks = () => {
+const addPaginationLinks = (numLinks) => {
 
-	// calc how many links are needed 
-	const numLinks = Math.ceil(studentListLIs.length / MAX_STUDENTS_SHOWN);
+	// clear any pagination links 
+	$('.pagination ul').empty();
 
 	if (numLinks > 1) {
 		// add to html
@@ -90,6 +149,17 @@ const addPaginationLinks = () => {
 
 }
 
+
+const addSearchForm = () => {
+
+	const studentSearchForm = $('<div class="student-search"><input placeholder="Search for students..."><button>Search</button></div>');
+	$('.page-header').append(studentSearchForm);
+
+	// add event handler for search btn 
+	$('.student-search button').on('click', handleStudentSearch);
+
+}
+
 // on page load
 $(document).ready(function() {
 
@@ -99,11 +169,10 @@ $(document).ready(function() {
 	// add pagination links 
 	addPaginationDiv();
 
+	// add search form 
+	addSearchForm();
+
 	// show initial 10 students 
-	if ($('.pagination a')[0]) {
-		$('.pagination a')[0].click();
-	} else {
-		showAll();
-	}
+	triggerPagination();
 
 });
