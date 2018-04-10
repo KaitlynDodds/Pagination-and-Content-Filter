@@ -46,6 +46,11 @@ const hideAll = () => {
 	$(studentListLIs).hide();
 }
 
+const showAll = () => {
+	// hide all students
+	$(studentListLIs).show();
+}
+
 // shows designated student lis
 const show = (studentLIs) => {
 	$(studentLIs).show();
@@ -72,13 +77,15 @@ const addPaginationLinks = () => {
 	// calc how many links are needed 
 	const numLinks = Math.ceil(studentListLIs.length / MAX_STUDENTS_SHOWN);
 
-	// add to html
-	let count = 1;
-	while (count <= numLinks) {
-		// add link to ul 
-		const li = `<li><a href="#">${count}</a></li>`;
-		$('.pagination ul').append(li);
-		count++;
+	if (numLinks > 1) {
+		// add to html
+		let count = 1;
+		while (count <= numLinks) {
+			// add link to ul 
+			const li = `<li><a href="#">${count}</a></li>`;
+			$('.pagination ul').append(li);
+			count++;
+		}
 	}
 
 }
@@ -95,6 +102,8 @@ $(document).ready(function() {
 	// show initial 10 students 
 	if ($('.pagination a')[0]) {
 		$('.pagination a')[0].click();
+	} else {
+		showAll();
 	}
 
 });
