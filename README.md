@@ -31,3 +31,6 @@ When the "Search" button is clicked, the list of students is filtered to match t
 the box list all students whose name or email includes Phillip.  
 
 If no matches are found by the search, include a message in the HTML to tell the user there are no matches.
+
+**Completed:** 4/13/2018  
+**Grade:** Exceeds Expectations
